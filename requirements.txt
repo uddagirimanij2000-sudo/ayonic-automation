@@ -1,0 +1,25 @@
+# Google Sheets
+gspread==6.1.2
+google-auth==2.29.0
+google-auth-oauthlib==1.2.0
+
+# Web scraping
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.2.1
+
+# Browser automation (contact form submission)
+playwright==1.44.0
+
+# Instagram scraping
+instagrapi==2.0.1
+
+# Scheduler
+APScheduler==3.10.4
+
+# Utilities
+python-dotenv==1.0.1
+colorama==0.4.6
+
+# Optional — Google Maps (requires billing enabled)
+# googlemaps==4.10.0
