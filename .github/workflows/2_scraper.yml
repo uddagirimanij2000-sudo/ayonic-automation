@@ -1,0 +1,53 @@
+name: 2. Scraper (Every 3 Days at 11:00 Berlin)
+
+on:
+  schedule:
+    - cron: '0 9 */3 * *'  # 09:00 UTC = 11:00 Berlin (CEST), every 3 days
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: python -m playwright install chromium --with-deps
+
+      - name: Restore credentials.json
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 -d > credentials.json
+
+      - name: Run Google scraper
+        env:
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_SHEET_ID:      ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_MAPS_API_KEY:  ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          NTFY_TOPIC:           ${{ secrets.NTFY_TOPIC }}
+          GEMINI_API_KEY:       ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}
+          SERPAPI_KEY:          ${{ secrets.SERPAPI_KEY }}
+        run: python main.py scrape --google
+
+      - name: Notify scrape complete
+        if: always()
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          python -c "
+          import sys, os; sys.path.insert(0, '.')
+          from tools.phone_notify import send_notification
+          send_notification('Scraper Done', 'Google scrape completed. New leads added to Sheet.')
+          "

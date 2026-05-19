@@ -1,0 +1,34 @@
+name: 3. Unsubscribe Check (12:45 Berlin)
+
+on:
+  schedule:
+    - cron: '45 10 * * *'  # 10:45 UTC = 12:45 Berlin (CEST) — runs BEFORE email job
+  workflow_dispatch:
+
+jobs:
+  unsubscribe-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore credentials.json
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 -d > credentials.json
+
+      - name: Check for unsubscribe requests
+        env:
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_SHEET_ID:    ${{ secrets.GOOGLE_SHEET_ID }}
+          NTFY_TOPIC:         ${{ secrets.NTFY_TOPIC }}
+        run: python main.py check-unsubs

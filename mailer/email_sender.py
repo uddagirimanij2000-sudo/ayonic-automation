@@ -47,7 +47,7 @@ def build_email(company_name: str, category: str,
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"]    = f"Manoj Uddagiri <{config.GMAIL_USER}>"
+    msg["From"]    = f"Ayonic Team <{config.GMAIL_USER}>"
     # To header is set in send_email() — do NOT set it here
     msg["Reply-To"] = "info@ayonic.com"
     msg["Date"]    = formatdate(localtime=True)

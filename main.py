@@ -233,6 +233,11 @@ if __name__ == "__main__":
         dry = "--dry-run" in args
         run_reply_detector(dry_run=dry)
 
+    elif args[0] == "check-unsubs":
+        from mailer.unsubscribe_handler import run_unsubscribe_handler
+        dry = "--dry-run" in args
+        run_unsubscribe_handler(dry_run=dry)
+
     elif args[0] == "categorize":
         from tools.ai_categorizer import run_categorizer
         dry = "--dry-run" in args

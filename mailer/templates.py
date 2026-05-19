@@ -269,19 +269,50 @@ CLEANING_KEYWORDS = {
 
 # ── Default fallback ──────────────────────────────────────────────────────────
 
-DEFAULT_SUBJECT = "Partnership Opportunity — {company_name}"
+DEFAULT_SUBJECT = "Cooperation / Kooperationsanfrage: Ayonic & {company_name} in {city}"
 DEFAULT_BODY = """\
-Hi {contact_name},
+Hallo {contact_name},
 
-I came across your {category} business and was genuinely impressed with what you offer.
+ich bin auf {company_name} gestossen und war beeindruckt von {ai_detail_de}.
 
-I'd love to explore how we can work together to grow your customer base.
+Ayonic ist eine Plattform, die Kunden direkt mit den besten lokalen Dienstleistern in {city} verbindet. Kunden buchen geprueft Experten, verfolgen Termine und erhalten sofortige Preisangebote – alles an einem Ort.
 
-Would you be open to a quick 15-minute call this week?
+Wir expandieren gerade in {city} und suchen zuverlaessige Servicepartner. Mit Ayonic erhalten Sie direkte Auftragsanfragen von Kunden in Ihrer Region, ohne zusaetzlichen Aufwand Ihrerseits.
+
+So funktioniert die Zusammenarbeit mit Ayonic:
+
+- Direkte Buchungsanfragen von Kunden in Ihrer Naehe
+- Kein Aufwand fuer Werbung oder Marketing
+- Volle Kontrolle ueber Ihren Zeitplan und Ihre Verfuegbarkeit
+
+{company_name} waere eine hervorragende Ergaenzung fuer unsere Plattform.
+
+Haetten Sie diese Woche Zeit fuer ein kurzes 5-Minuten-Gespraech?
+
+---
+
+Hello {contact_name},
+
+I came across {company_name} and was genuinely impressed by {ai_detail}.
+
+Ayonic is an on-demand service booking platform that connects customers directly with trusted local professionals in {city}. Customers book verified experts, track appointments, and get instant quotes — all in one place.
+
+We are currently expanding in {city} and looking for reliable service partners. Joining our platform means you receive direct job requests from clients in your area, without any extra work on your end.
+
+Here is what working with Ayonic looks like:
+
+- Direct booking requests from clients in your area
+- No need to manage advertising or promotions
+- Full control over your schedule and availability
+
+Your business would be a great fit for Ayonic, and we would love to feature {company_name} on our platform.
+
+Would you be open for a quick 5-minute call this week to explore this?
 
 Best regards,
-{sender_name}
-{sender_email}
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
 """
 
 

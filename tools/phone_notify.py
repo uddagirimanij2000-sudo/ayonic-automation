@@ -87,6 +87,54 @@ def notify_error(module: str, error: str):
     _send_notification(title, body, priority="high")
 
 
+def notify_unsubscribe(company: str, email: str):
+    """Alert when a lead unsubscribes."""
+    title = f"🚫 Unsubscribed: {company}"
+    body = f"Email: {email}\nTime: {datetime.now().strftime('%H:%M')}\nRemoved from list."
+    _send_notification(title, body, priority="default")
+
+
+def notify_daily_report():
+    """
+    Send a daily morning summary to ntfy.
+    Shows: emails sent today, total replies, new leads scraped, unsubscribes.
+    Called by scheduler every morning.
+    """
+    try:
+        from sheets.sheets_client import get_all_leads
+        from datetime import date
+
+        leads       = get_all_leads()
+        today_str   = date.today().strftime("%Y-%m-%d")
+
+        total       = len(leads)
+        pending     = sum(1 for l in leads if str(l.get("Status","")).lower() == "pending")
+        emailed     = sum(1 for l in leads if str(l.get("Status","")).lower() == "emailed")
+        replied     = sum(1 for l in leads if str(l.get("Status","")).lower() == "replied")
+        unsubs      = sum(1 for l in leads if str(l.get("Status","")).lower() == "unsubscribed")
+        no_email    = sum(1 for l in leads if not str(l.get("Email","")).strip())
+
+        title = f"📊 Daily Report — {today_str}"
+        body = (
+            f"Total leads   : {total}\n"
+            f"Pending       : {pending}\n"
+            f"Emailed       : {emailed}\n"
+            f"Replied       : {replied}\n"
+            f"Unsubscribed  : {unsubs}\n"
+            f"No email yet  : {no_email}\n"
+            f"\nNext email run: {date.today().strftime('%d %b')} at 13:00"
+        )
+        _send_notification(title, body, priority="default")
+        print(f"  📊 Daily report sent to ntfy")
+    except Exception as e:
+        print(f"  ⚠ Daily report failed: {e}")
+
+
+def send_notification(title: str, message: str, tags: str = "briefcase"):
+    """Public helper — send any custom notification to ntfy."""
+    _send_notification(title, message)
+
+
 # ── Internal dispatch ─────────────────────────────────────────────────────────
 
 def _send_notification(title: str, body: str, priority: str = "default"):
@@ -115,19 +163,35 @@ def _send_notification(title: str, body: str, priority: str = "default"):
 def _send_ntfy(topic: str, title: str, body: str, priority: str = "default") -> bool:
     """Send push notification via ntfy.sh."""
     try:
-        url = f"https://ntfy.sh/{topic}"
+        url  = f"https://ntfy.sh/{topic}"
         data = body.encode("utf-8")
-        req = urllib.request.Request(url, data=data, method="POST")
-        req.add_header("Title", title)
+        req  = urllib.request.Request(url, data=data, method="POST")
+        # ntfy headers must be ASCII — encode title for emoji support
+        req.add_header("Title",    title.encode("utf-8").decode("latin-1", errors="replace"))
         req.add_header("Priority", priority)
-        req.add_header("Tags", "briefcase,email")
+        req.add_header("Tags",     "briefcase,email")
+        req.add_header("Content-Type", "text/plain; charset=utf-8")
 
         urllib.request.urlopen(req, timeout=10)
         print(f"  {Fore.CYAN}📱 Phone notification sent (ntfy){Style.RESET_ALL}")
         return True
     except Exception as e:
-        print(f"  {Fore.YELLOW}⚠ ntfy failed: {e}{Style.RESET_ALL}")
-        return False
+        # Fallback: try without special chars in title
+        try:
+            import re
+            clean_title = re.sub(r'[^\x00-\x7F]', '', title).strip()
+            url  = f"https://ntfy.sh/{topic}"
+            data = (title + "\n\n" + body).encode("utf-8")
+            req  = urllib.request.Request(url, data=data, method="POST")
+            req.add_header("Title",    clean_title or "Ayonic Alert")
+            req.add_header("Priority", priority)
+            req.add_header("Content-Type", "text/plain; charset=utf-8")
+            urllib.request.urlopen(req, timeout=10)
+            print(f"  {Fore.CYAN}📱 Phone notification sent (ntfy){Style.RESET_ALL}")
+            return True
+        except Exception as e2:
+            print(f"  {Fore.YELLOW}⚠ ntfy failed: {e2}{Style.RESET_ALL}")
+            return False
 
 
 def _send_whatsapp(phone: str, apikey: str, title: str, body: str) -> bool:

@@ -493,9 +493,9 @@ def send_personalized_emails(dry_run: bool = False, test_mode: bool = False):
 
                 msg = MIMEMultipart("alternative")
                 msg["Subject"] = subject
-                msg["From"]    = f"Manoj Uddagiri <{config.GMAIL_USER}>"
+                msg["From"]    = f"Ayonic Team <{config.GMAIL_USER}>"
                 msg["To"]      = to_addr
-                msg["Reply-To"] = "info@ayonic.com"
+                msg["Reply-To"] = config.GMAIL_USER
                 msg["Date"]    = formatdate(localtime=True)
                 msg["Message-ID"] = make_msgid(domain="ayonic.com")
 

@@ -30,6 +30,7 @@ from mailer.email_sender import run_email_sender
 from mailer.contact_form import run_contact_form_outreach
 from mailer.followup_sender import run_followup_sender
 from mailer.reply_detector import run_reply_detector
+from mailer.unsubscribe_handler import run_unsubscribe_handler
 
 
 def scrape_job():
@@ -96,6 +97,23 @@ def reply_check_job():
     print(f"📬 REPLY CHECK — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"{'='*55}{Style.RESET_ALL}\n")
     run_reply_detector()
+
+
+def unsubscribe_job():
+    """Scan inbox for unsubscribe requests and block those leads."""
+    print(f"\n{Fore.CYAN}{'='*55}")
+    print(f"🚫 UNSUBSCRIBE CHECK — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print(f"{'='*55}{Style.RESET_ALL}\n")
+    run_unsubscribe_handler()
+
+
+def daily_report_job():
+    """Send daily ntfy summary every morning at 08:00."""
+    print(f"\n{Fore.CYAN}{'='*55}")
+    print(f"📊 DAILY REPORT — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print(f"{'='*55}{Style.RESET_ALL}\n")
+    from tools.phone_notify import notify_daily_report
+    notify_daily_report()
 
 
 def _next_run_time(hour: int):
@@ -167,14 +185,38 @@ def main():
         replace_existing=True,
     )
 
+    # Unsubscribe check — runs 15 min before email job (so blocked leads are skipped)
+    unsub_hour   = config.EMAIL_CHECK_HOUR
+    unsub_minute = 45  # runs at 12:45 before email job at 13:00
+    scheduler.add_job(
+        unsubscribe_job,
+        trigger=CronTrigger(hour=unsub_hour - 1, minute=unsub_minute),
+        id="unsubscribe_job",
+        name="Check inbox for unsubscribe requests",
+        misfire_grace_time=3600,
+        replace_existing=True,
+    )
+
+    # Daily morning report via ntfy — runs at 08:00 every day
+    scheduler.add_job(
+        daily_report_job,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="daily_report_job",
+        name="Daily ntfy summary report",
+        misfire_grace_time=3600,
+        replace_existing=True,
+    )
+
     print(f"\n{Fore.GREEN}{'='*55}")
     print(f"🤖 Lead Generation Scheduler — RUNNING")
     print(f"{'='*55}")
+    print(f"  Daily report  : every morning at 08:00 (ntfy)")
     print(f"  Scrape        : every {config.SCRAPE_INTERVAL_DAYS} days at {config.SCRAPE_HOUR:02d}:00")
     print(f"  Sources       : Google + Instagram + FB + LinkedIn + TikTok + Twitter/X + YouTube")
     print(f"  Emails        : daily at {config.EMAIL_CHECK_HOUR:02d}:00 (leads >= {config.EMAIL_DELAY_DAYS} days old)")
     print(f"  Follow-ups    : daily at {followup_hour:02d}:00 (3d + 7d auto)")
-    print(f"  Reply check   : daily at {followup_hour-1:02d}:30 (auto-detect replies)")
+    print(f"  Reply check   : daily at {followup_hour-1:02d}:30 (auto-detect replies + ntfy)")
+    print(f"  Unsubscribes  : daily at {unsub_hour-1:02d}:{unsub_minute} (block before email job)")
     print(f"  Contact forms : daily at {config.EMAIL_CHECK_HOUR:02d}:30 (no-email leads)")
     print(f"{'='*55}{Style.RESET_ALL}\n")
     print("Press Ctrl+C to stop.\n")
