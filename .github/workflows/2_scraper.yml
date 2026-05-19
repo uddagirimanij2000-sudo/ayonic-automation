@@ -23,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Playwright browsers
-        run: python -m playwright install chromium --with-deps
-
       - name: Restore credentials.json
         run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 -d > credentials.json
 
@@ -44,10 +41,13 @@ jobs:
       - name: Notify scrape complete
         if: always()
         env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_TOPIC:         ${{ secrets.NTFY_TOPIC }}
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_SHEET_ID:    ${{ secrets.GOOGLE_SHEET_ID }}
         run: |
           python -c "
-          import sys, os; sys.path.insert(0, '.')
+          import sys; sys.path.insert(0, '.')
           from tools.phone_notify import send_notification
           send_notification('Scraper Done', 'Google scrape completed. New leads added to Sheet.')
           "

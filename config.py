@@ -136,7 +136,7 @@ SCRAPE_HOUR          = 11      # Scraper runs at 11:00
 EMAIL_CHECK_HOUR     = 13      # Email sender runs at 13:00
 
 # ── Email Limits (Gmail safe) ─────────────────────────────────────────────────
-DAILY_EMAIL_LIMIT    = 400     # Max emails per day (Gmail free = 500)
+DAILY_EMAIL_LIMIT    = 100     # Max 100 emails per send run (every 2 days)
 EMAILS_PER_MINUTE    = 20      # Max 20 emails per minute
 EMAIL_DELAY_SECONDS  = 3       # 60s / 20 = 3s between each email
 

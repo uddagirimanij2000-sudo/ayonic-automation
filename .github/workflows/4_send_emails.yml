@@ -1,14 +1,14 @@
-name: 4. Send Emails (13:00 Berlin)
+name: 4. Send Emails (Every 2 Days at 13:00 Berlin)
 
 on:
   schedule:
-    - cron: '0 11 * * *'   # 11:00 UTC = 13:00 Berlin (CEST)
+    - cron: '0 11 */2 * *'  # 11:00 UTC = 13:00 Berlin (CEST), every 2 days
   workflow_dispatch:
 
 jobs:
   send-emails:
     runs-on: ubuntu-latest
-    timeout-minutes: 90     # allow up to 90 min for 400 emails with delays
+    timeout-minutes: 30   # 100 emails x 3s = ~5 min, 30 min is safe buffer
 
     steps:
       - name: Checkout repo
@@ -26,18 +26,18 @@ jobs:
       - name: Restore credentials.json
         run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 -d > credentials.json
 
-      - name: Send outreach emails
+      - name: Send outreach emails (up to 400/day)
         env:
-          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          GOOGLE_SHEET_ID:    ${{ secrets.GOOGLE_SHEET_ID }}
-          NTFY_TOPIC:         ${{ secrets.NTFY_TOPIC }}
-          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY:       ${{ secrets.GROQ_API_KEY }}
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_SHEET_ID:     ${{ secrets.GOOGLE_SHEET_ID }}
+          NTFY_TOPIC:          ${{ secrets.NTFY_TOPIC }}
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY:        ${{ secrets.GROQ_API_KEY }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: python main.py send-emails
 
-      - name: Send follow-up emails
+      - name: Send follow-up emails (3-day and 7-day)
         env:
           GMAIL_USER:         ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}

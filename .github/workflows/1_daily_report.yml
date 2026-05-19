@@ -3,11 +3,12 @@ name: 1. Daily Report (08:00 Berlin)
 on:
   schedule:
     - cron: '0 6 * * *'   # 06:00 UTC = 08:00 Berlin (CEST)
-  workflow_dispatch:        # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   daily-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repo
