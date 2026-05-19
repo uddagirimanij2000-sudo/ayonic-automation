@@ -104,62 +104,7 @@ def _extract_ai_detail(description: str, language: str = "en") -> str:
 # ── Cleaning Template (Ayonic) — English ─────────────────────────────────────
 
 CLEANING_EN = {
-    "subject": "Cooperation Inquiry: Ayonic & {company_name} in {city}",
-    "body": """\
-Hello {contact_name},
-
-I recently came across your website and was particularly impressed by {ai_detail}.
-
-We are currently launching Ayonic – a new platform that connects private individuals \
-and businesses looking for professional home and office cleaning directly with the best \
-local service providers. Since we are currently expanding our capacity in {city}, your \
-service would be an excellent fit for our platform.
-
-The goal is simple: We bring you additional orders for residential or commercial \
-cleaning services without you having to worry about acquisition or marketing.
-
-Would you have time next week for a short, completely non-binding 5-minute phone \
-call to see if this is of interest to you?
-
-Best regards,
-
-{sender_name} → Founder, Ayonic
-{ayonic_link}
-""",
-}
-
-# ── Cleaning Template (Ayonic) — German ──────────────────────────────────────
-
-CLEANING_DE = {
-    "subject": "Kooperationsanfrage: Ayonic & {company_name} in {city}",
-    "body": """\
-Hallo {contact_name},
-
-ich bin gerade auf Ihre Webseite gestoßen und mir ist besonders {ai_detail_de} \
-positiv aufgefallen.
-
-Wir starten aktuell mit Ayonic – einer neuen Plattform, die Privatkunden und Unternehmen \
-auf der Suche nach professioneller Haus- und Büroreinigung direkt mit den besten lokalen \
-Dienstleistern verbindet. Da wir in {city} gerade unsere Kapazitäten ausbauen, würden \
-Sie mit Ihrem Service hervorragend auf unsere Plattform passen.
-
-Das Ziel ist simpel: Wir bringen Ihnen zusätzliche Aufträge für Haushalts- oder \
-Gewerbereinigungen, ohne dass Sie sich um die Akquise oder das Marketing kümmern müssen.
-
-Hätten Sie nächste Woche Zeit für ein kurzes, völlig unverbindliches 5-Minuten-Telefonat, \
-um zu schauen, ob das für Sie interessant ist?
-
-Viele Grüße,
-
-{sender_name} → Gründer, Ayonic
-{ayonic_link}
-""",
-}
-
-# ── Cleaning Template — Both Languages (EN first, DE below) ──────────────────
-
-CLEANING_BOTH = {
-    "subject": "Cooperation / Kooperationsanfrage: Ayonic & {company_name} in {city}",
+    "subject": "Kurze Frage – {company_name}",
     "body": """\
 Hello {contact_name},
 
@@ -176,11 +121,17 @@ cleaning services without you having to worry about acquisition or marketing.
 Would you have time next week for a short, completely non-binding 5-minute phone call?
 
 Best regards,
-{sender_name} → Founder, Ayonic
+Team Ayonic
+info@ayonic.com
 {ayonic_link}
+""",
+}
 
-────────────────────────────────────────
+# ── Cleaning Template (Ayonic) — German ──────────────────────────────────────
 
+CLEANING_DE = {
+    "subject": "Kurze Anfrage – {company_name}",
+    "body": """\
 Hallo {contact_name},
 
 ich bin gerade auf Ihre Webseite gestoßen und mir ist besonders {ai_detail_de} \
@@ -196,8 +147,48 @@ Gewerbereinigungen, ohne dass Sie sich um die Akquise oder das Marketing kümmer
 
 Hätten Sie nächste Woche Zeit für ein kurzes, völlig unverbindliches 5-Minuten-Telefonat?
 
-Viele Grüße,
-{sender_name} → Gründer, Ayonic
+Mit freundlichen Grüßen,
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
+""",
+}
+
+# ── Cleaning Template — Both Languages (DE first, EN below) ──────────────────
+
+CLEANING_BOTH = {
+    "subject": "Kurze Frage zu {company_name}",
+    "body": """\
+Hallo {contact_name},
+
+ich bin gerade auf Ihre Webseite gestoßen und mir ist besonders {ai_detail_de} positiv aufgefallen.
+
+Wir starten aktuell mit Ayonic – einer neuen Plattform, die Privatkunden und Unternehmen auf der Suche nach professioneller Haus- und Bueroreinigung direkt mit den besten lokalen Dienstleistern verbindet. Da wir in {city} gerade unsere Kapazitaeten ausbauen, wuerden Sie mit Ihrem Service hervorragend auf unsere Plattform passen.
+
+Das Ziel ist simpel: Wir bringen Ihnen zusaetzliche Auftraege fuer Haushalts- oder Gewerbereinigungen, ohne dass Sie sich um die Akquise oder das Marketing kuemmern muessen.
+
+Haetten Sie naechste Woche Zeit fuer ein kurzes, voellig unverbindliches 5-Minuten-Telefonat?
+
+Mit freundlichen Gruessen,
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
+
+---
+
+Hello {contact_name},
+
+I recently came across your website and was particularly impressed by {ai_detail}.
+
+We are currently launching Ayonic – a new platform that connects private individuals and businesses looking for professional home and office cleaning directly with the best local service providers. Since we are currently expanding our capacity in {city}, your service would be an excellent fit for our platform.
+
+The goal is simple: We bring you additional orders for residential or commercial cleaning services without you having to worry about acquisition or marketing.
+
+Would you have time next week for a short, completely non-binding 5-minute phone call?
+
+Best regards,
+Team Ayonic
+info@ayonic.com
 {ayonic_link}
 """,
 }
@@ -206,7 +197,7 @@ Viele Grüße,
 
 TEMPLATES = {
     "plumber": {
-        "subject": "Partnership Opportunity — {company_name}",
+        "subject": "Kurze Frage – {company_name}",
         "body": """\
 Hi {contact_name},
 
@@ -218,13 +209,14 @@ outreach — and I'd love to see if we'd be a good fit.
 Would you be open to a quick 15-minute call this week?
 
 Best regards,
-{sender_name}
-{sender_email}
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
 """,
     },
 
     "electrician": {
-        "subject": "Expanding Your Electrical Business — {company_name}",
+        "subject": "Mehr Auftraege fuer {company_name}",
         "body": """\
 Hi {contact_name},
 
@@ -235,13 +227,14 @@ I help electricians get in front of homeowners actively searching for electrical
 Would you be open to a quick 15-minute chat this week?
 
 Best regards,
-{sender_name}
-{sender_email}
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
 """,
     },
 
     "painter": {
-        "subject": "More Painting Projects for {company_name}",
+        "subject": "Mehr Auftraege fuer {company_name}",
         "body": """\
 Hi {contact_name},
 
@@ -252,8 +245,9 @@ I help painting contractors fill their schedules with consistent, high-value pro
 Would you have 15 minutes this week to explore what this could look like?
 
 Best regards,
-{sender_name}
-{sender_email}
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
 """,
     },
 }
@@ -264,14 +258,14 @@ CLEANING_KEYWORDS = {
     "cleaner", "cleaning", "cleaning company", "cleaning service",
     "reinigung", "reinigungsservice", "haushalt", "hausreinigung",
     "office cleaning", "domestic cleaning", "commercial cleaning",
-    "maid", "housekeeping", "janitor", "janitorial",
+    "post construction cleaning", "construction cleaning", "baureinigung",
+    "maid", "housekeeping", "janitor", "janitorial", "gebaeudeservice", "gebaudeservice",
 }
 
 # ── Default fallback ──────────────────────────────────────────────────────────
 
-DEFAULT_SUBJECT = "Cooperation / Kooperationsanfrage: Ayonic & {company_name} in {city}"
-DEFAULT_BODY = """\
-Hallo {contact_name},
+DEFAULT_SUBJECT = "Kurze Frage zu {company_name}"
+DEFAULT_BODY = """Hallo {contact_name},
 
 ich bin auf {company_name} gestossen und war beeindruckt von {ai_detail_de}.
 
@@ -288,6 +282,11 @@ So funktioniert die Zusammenarbeit mit Ayonic:
 {company_name} waere eine hervorragende Ergaenzung fuer unsere Plattform.
 
 Haetten Sie diese Woche Zeit fuer ein kurzes 5-Minuten-Gespraech?
+
+Mit freundlichen Gruessen,
+Team Ayonic
+info@ayonic.com
+{ayonic_link}
 
 ---
 
