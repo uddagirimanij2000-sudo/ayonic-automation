@@ -45,16 +45,69 @@ def _get_test_leads() -> list[dict]:
     return leads
 
 
+def _translate_with_deepl(description: str) -> tuple[str, str]:
+    """
+    Use DeepL API to:
+    1. Detect language of description
+    2. If German → translate to English
+    3. If English → translate to German
+    Returns (de_text, en_text) — both versions of the description.
+    Falls back to original if DeepL unavailable.
+    """
+    if not config.DEEPL_API_KEY or not description or len(description.strip()) < 10:
+        return description, description  # Use same text for both if no API key
+
+    try:
+        import deepl
+        translator = deepl.Translator(config.DEEPL_API_KEY)
+
+        # Detect language by trying to translate to English first
+        result_en = translator.translate_text(
+            description[:500],
+            target_lang="EN-US",
+        )
+        en_text = result_en.text
+        detected_lang = result_en.detected_source_lang  # "DE" or "EN"
+
+        if detected_lang == "DE":
+            # Description is German → already have English, keep original as DE
+            de_text = description[:500]
+            print(f"  🌐 DeepL: DE detected → translated to EN ✅")
+        else:
+            # Description is English → translate to German
+            result_de = translator.translate_text(
+                description[:500],
+                target_lang="DE",
+            )
+            de_text = result_de.text
+            en_text = description[:500]
+            print(f"  🌐 DeepL: EN detected → translated to DE ✅")
+
+        return de_text, en_text
+
+    except Exception as e:
+        print(f"  {Fore.YELLOW}⚠ DeepL unavailable ({e}) — using original{Style.RESET_ALL}")
+        return description, description
+
+
+
+
 def _send_one(name: str, email: str, description: str) -> bool:
-    """Send a single test email. Returns True on success."""
+    """Send a single test email using DeepL bilingual translation."""
+
+    # DeepL: auto-detect German/English and produce both versions
+    de_description, en_description = _translate_with_deepl(description)
+
     subject, body = render_email(
         company_name=name,
         category="service business",
         sender_name="Team Ayonic",
         sender_email=config.GMAIL_USER,
         city="Berlin",
-        description=description,
+        description=de_description,   # German version for DE part of email
         contact_name="",
+        ai_detail_de=de_description,
+        ai_detail_en=en_description,
     )
 
     msg = MIMEMultipart("alternative")
@@ -76,6 +129,7 @@ def _send_one(name: str, email: str, description: str) -> bool:
     except Exception as e:
         print(f"  {Fore.RED}❌ Failed → {email}: {e}{Style.RESET_ALL}")
         return False
+
 
 
 def run_test_sender():
