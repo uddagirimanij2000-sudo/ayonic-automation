@@ -1,0 +1,42 @@
+name: 0. TEST Emails (Every Day at 10:00 Berlin)
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC = 10:00 Berlin (CEST), every day
+  workflow_dispatch:       # Also allow manual trigger
+
+jobs:
+  test-emails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore credentials.json
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 -d > credentials.json
+
+      - name: Send test emails (max 20/day from test sheet)
+        env:
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_SHEET_ID:     ${{ secrets.GOOGLE_SHEET_ID }}
+          NTFY_TOPIC:          ${{ secrets.NTFY_TOPIC }}
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY:        ${{ secrets.GROQ_API_KEY }}
+        run: |
+          python -c "
+          import sys; sys.path.insert(0, '.')
+          from mailer.test_sender import run_test_sender
+          run_test_sender()
+          "
