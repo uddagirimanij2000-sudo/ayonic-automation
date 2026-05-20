@@ -47,10 +47,8 @@ def _get_test_leads() -> list[dict]:
 
 def _translate_with_groq(description: str) -> tuple[str, str]:
     """
-    Use Groq AI (free, already configured) to translate description:
-    - Detects if German or English
-    - Returns (de_text, en_text) — both versions
-    Falls back to using the original text if Groq unavailable.
+    Use Groq AI to translate description between German and English.
+    Returns (de_text, en_text) — both versions of the actual description.
     """
     if not config.GROQ_API_KEY or not description or len(description.strip()) < 10:
         return description, description
@@ -59,36 +57,40 @@ def _translate_with_groq(description: str) -> tuple[str, str]:
         from groq import Groq
         client = Groq(api_key=config.GROQ_API_KEY)
 
-        # Ask Groq to detect language and translate both ways
-        prompt = f"""You are a professional German-English translator.
+        desc = description.strip()[:500]
 
-Text to translate:
-\"\"\"{description[:400]}\"\"\"
-
-Reply with EXACTLY 2 lines, nothing else:
-Line 1: German version of the text (translate to German if it's English, keep if already German)
-Line 2: English version of the text (translate to English if it's German, keep if already English)"""
-
-        response = client.chat.completions.create(
+        # Step 1: Translate to English
+        r_en = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{
+                "role": "user",
+                "content": f"Translate this text to English. Return ONLY the translated text, nothing else:\n\n{desc}"
+            }],
             max_tokens=300,
             temperature=0.1,
         )
-        lines = response.choices[0].message.content.strip().split("\n")
-        lines = [l.strip() for l in lines if l.strip()]
+        en_text = r_en.choices[0].message.content.strip()
 
-        if len(lines) >= 2:
-            de_text = lines[0]
-            en_text = lines[1]
-            print(f"  🤖 Groq DE: {de_text[:60]}...")
-            print(f"  🤖 Groq EN: {en_text[:60]}...")
-            return de_text, en_text
+        # Step 2: Translate to German
+        r_de = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{
+                "role": "user",
+                "content": f"Translate this text to German. Return ONLY the translated text, nothing else:\n\n{desc}"
+            }],
+            max_tokens=300,
+            temperature=0.1,
+        )
+        de_text = r_de.choices[0].message.content.strip()
+
+        print(f"  🌐 DE: {de_text[:70]}...")
+        print(f"  🌐 EN: {en_text[:70]}...")
+        return de_text, en_text
 
     except Exception as e:
         print(f"  ⚠ Groq translation failed ({e}) — using original")
+        return description, description
 
-    return description, description  # fallback
 
 
 

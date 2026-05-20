@@ -21,35 +21,27 @@ from mailer.templates import render_email, get_template
 
 
 def _translate_with_groq(description: str) -> tuple[str, str]:
-    """
-    Use Groq AI (free) to translate description to both German and English.
-    Returns (de_text, en_text). Falls back to original if Groq unavailable.
-    """
+    """Use Groq to translate description to both German and English. Returns (de, en)."""
     if not config.GROQ_API_KEY or not description or len(description.strip()) < 10:
         return description, description
     try:
         from groq import Groq
         client = Groq(api_key=config.GROQ_API_KEY)
-        prompt = f"""You are a professional German-English translator.
-
-Text to translate:
-\"\"\"{description[:400]}\"\"\"
-
-Reply with EXACTLY 2 lines, nothing else:
-Line 1: German version (translate to German if English, keep if already German)
-Line 2: English version (translate to English if German, keep if already English)"""
-        response = client.chat.completions.create(
+        desc = description.strip()[:500]
+        en = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-            temperature=0.1,
-        )
-        lines = [l.strip() for l in response.choices[0].message.content.strip().split("\n") if l.strip()]
-        if len(lines) >= 2:
-            return lines[0], lines[1]
+            messages=[{"role": "user", "content": f"Translate to English. Return ONLY the translation:\n\n{desc}"}],
+            max_tokens=300, temperature=0.1,
+        ).choices[0].message.content.strip()
+        de = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": f"Translate to German. Return ONLY the translation:\n\n{desc}"}],
+            max_tokens=300, temperature=0.1,
+        ).choices[0].message.content.strip()
+        return de, en
     except Exception:
-        pass
-    return description, description
+        return description, description
+
 from sheets.sheets_client import (
     get_leads_ready_to_email,
     update_lead_status,
