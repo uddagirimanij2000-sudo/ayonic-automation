@@ -378,26 +378,46 @@ def get_leads_ready_to_email(delay_days: int = None) -> list[dict]:
     today = datetime.now().date()
     ready = []
 
-    # Non-German keywords to skip in company name
-    NON_GERMAN_KEYWORDS = [
+    # --- Berlin-only filter ---
+    # A lead is accepted if ANY of these are true:
+    #   1. Email domain ends in .de or .berlin
+    #   2. Company name contains 'berlin'
+    #   3. Description contains 'berlin'
+    #   4. Company name contains a German legal entity type (GmbH, UG, AG, KG, e.K.)
+    # A lead is REJECTED if company name contains a known non-German city
+
+    NON_GERMAN_CITIES = [
         'kolkata', 'mumbai', 'delhi', 'india', 'dubai', 'abu dhabi', 'uae',
-        'london', 'new york', 'nyc', 'toronto', 'sydney', 'singapore',
-        'paris', 'moscow', 'russia', 'ukraine', 'crimea', 'whirlpool india',
-        'yelp', 'versus', 'dubizzle', 'weddingsonline'
+        'london', 'los angeles', 'new york', 'nyc', 'toronto', 'sydney',
+        'singapore', 'paris', 'moscow', 'russia', 'ukraine', 'crimea',
     ]
+
+    GERMAN_ENTITY_TYPES = ['gmbh', ' ug ', ' ag ', ' kg ', 'e.k.', 'ohg', 'gbr', 'e.v.']
 
     for idx, row in enumerate(all_rows, start=2):
         status         = str(row.get("Status", "")).strip().lower()
-        email          = str(row.get("Email", "")).strip()
+        email          = str(row.get("Email", "")).strip().rstrip('.')
         date_found_str = str(row.get("Date Found", "")).strip()
         company_name   = str(row.get("Company Name", "")).strip().lower()
+        description    = str(row.get("Description", "")).strip().lower()
 
         if status != "pending" or not email:
             continue
 
-        # Skip obviously non-German/Berlin leads
-        if any(kw in company_name for kw in NON_GERMAN_KEYWORDS):
+        # Hard reject: obvious non-German city in name
+        if any(city in company_name for city in NON_GERMAN_CITIES):
             continue
+
+        # Extract email domain
+        domain = email.split('@')[-1].lower() if '@' in email else ''
+
+        # Accept if Berlin/German
+        is_de_domain      = domain.endswith('.de') or domain.endswith('.berlin')
+        has_berlin        = 'berlin' in company_name or 'berlin' in description
+        is_german_entity  = any(t in company_name for t in GERMAN_ENTITY_TYPES)
+
+        if not (is_de_domain or has_berlin or is_german_entity):
+            continue  # Skip — not a Berlin/German lead
 
         try:
             date_found = datetime.strptime(date_found_str, "%Y-%m-%d").date()
