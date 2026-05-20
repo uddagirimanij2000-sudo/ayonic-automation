@@ -80,60 +80,41 @@ def _send_one(name: str, email: str, description: str) -> bool:
 
 def run_test_sender():
     """
-    Test mode:
-    - Picks a random REAL Berlin company from the Leads sheet (for realistic template data)
-    - Sends the email to recipients in the 'test' sheet (NOT to the real company)
-    - Perfect for previewing how the real email looks before live sending
+    Test mode — uses the 'test' sheet directly:
+    - Each row's name + description is used as the email template data
+    - Sends to each recipient's own email address
+    - Same bilingual template as the real outreach emails
     """
-    import random
-    from sheets.sheets_client import get_all_leads
-
     print(f"\n{Fore.CYAN}{'='*55}")
     print(f"  TEST EMAIL SENDER — Sheet: '{TEST_SHEET_NAME}'")
     print(f"  Limit: {TEST_DAILY_LIMIT} per run | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"{'='*55}{Style.RESET_ALL}\n")
 
-    # Step 1: Get test recipients from 'test' sheet
-    test_recipients = _get_test_leads()
-    if not test_recipients:
-        print(f"{Fore.YELLOW}⚠ No recipients in 'test' sheet. Add rows with: name, email, description{Style.RESET_ALL}")
+    # Get all test sheet recipients
+    test_leads = _get_test_leads()
+    if not test_leads:
+        print(f"{Fore.YELLOW}⚠ No recipients in 'test' sheet.")
+        print(f"  Add rows with columns: name | email | description{Style.RESET_ALL}")
         return
 
-    # Step 2: Pick a random real Berlin company from Leads sheet for template data
-    all_leads = get_all_leads()
-    berlin_leads = [
-        l for l in all_leads
-        if str(l.get("Description", "")).strip()
-        and str(l.get("Company Name", "")).strip()
-        and str(l.get("Email", "")).strip()
-    ]
+    print(f"Found {len(test_leads)} recipients in test sheet:")
+    for l in test_leads:
+        print(f"  • {l['name']:20} → {l['email']}")
 
-    if berlin_leads:
-        sample_lead = random.choice(berlin_leads)
-        company_name = str(sample_lead.get("Company Name", "Berliner Service GmbH")).strip()
-        description  = str(sample_lead.get("Description", "")).strip()
-        category     = str(sample_lead.get("Category", "service business")).strip()
-        print(f"{Fore.YELLOW}📋 Using real Berlin company as template data:")
-        print(f"   Company: {company_name}")
-        print(f"   Category: {category}{Style.RESET_ALL}\n")
-    else:
-        company_name = "Berliner Reinigung GmbH"
-        description  = "Professional cleaning company in Berlin."
-        category     = "cleaning"
-
-    # Step 3: Send email to each test recipient using real company data
-    print(f"📧 Sending to {len(test_recipients)} test recipients:\n")
+    print(f"\n📧 Sending (max {TEST_DAILY_LIMIT})...\n")
     sent = 0
-    for recipient in test_recipients[:TEST_DAILY_LIMIT]:
+
+    for lead in test_leads[:TEST_DAILY_LIMIT]:
+        # Use each row's own name + description from the test sheet
         success = _send_one(
-            name=company_name,
-            email=recipient["email"],
-            description=description,
+            name=lead["name"],
+            email=lead["email"],
+            description=lead["description"],
         )
         if success:
             sent += 1
         time.sleep(SMTP_DELAY_SEC)
 
-    print(f"\n{Fore.GREEN}✅ Done — {sent}/{len(test_recipients)} test emails sent.")
-    print(f"   Template used: {company_name}{Style.RESET_ALL}\n")
+    print(f"\n{Fore.GREEN}✅ Done — {sent}/{len(test_leads)} test emails sent.{Style.RESET_ALL}\n")
+
 
