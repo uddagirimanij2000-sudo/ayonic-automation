@@ -74,14 +74,17 @@ def check_replies(days_back: int = 14, dry_run: bool = False) -> list:
     print(f"  Checking replies from {len(email_to_lead)} emailed leads...")
     print(f"  Looking back {days_back} days")
 
-    # Connect to Gmail via IMAP
+    # Connect to info@ayonic.com via IMAP — replies go here (Reply-To: info@ayonic.com)
+    imap_user = config.INFO_EMAIL or config.GMAIL_USER
+    imap_pass = config.INFO_APP_PASSWORD or config.GMAIL_APP_PASSWORD
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
-        mail.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
+        mail.login(imap_user, imap_pass)
         mail.select("INBOX")
+        print(f"  📬 Monitoring inbox: {imap_user}")
     except Exception as e:
-        print(f"  {Fore.RED}✘ Gmail IMAP error: {e}{Style.RESET_ALL}")
-        print(f"  Make sure IMAP is enabled in Gmail settings")
+        print(f"  {Fore.RED}✘ IMAP error for {imap_user}: {e}{Style.RESET_ALL}")
+        print(f"  Make sure IMAP is enabled and INFO_APP_PASSWORD is set")
         return []
 
     # Search for emails from the last N days
@@ -165,7 +168,7 @@ def check_replies(days_back: int = 14, dry_run: bool = False) -> list:
     # Also check Spam/Junk folder
     try:
         mail2 = imaplib.IMAP4_SSL("imap.gmail.com")
-        mail2.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
+        mail2.login(imap_user, imap_pass)
         mail2.select("[Gmail]/Spam")
         
         status, messages = mail2.search(None, f'(SINCE {since_date})')

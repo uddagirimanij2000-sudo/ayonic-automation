@@ -167,8 +167,12 @@ GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 
 # ── Gmail SMTP ────────────────────────────────────────────────────────────────
-GMAIL_USER         = os.getenv("GMAIL_USER", "")
+GMAIL_USER         = os.getenv("GMAIL_USER", "")          # team@ayonic.com (sender)
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
+
+# info@ayonic.com — replies go here, bot monitors this inbox
+INFO_EMAIL         = os.getenv("INFO_EMAIL", "info@ayonic.com")
+INFO_APP_PASSWORD  = os.getenv("INFO_APP_PASSWORD", "")   # App password for info@ayonic.com
 SMTP_HOST          = "smtp.gmail.com"
 SMTP_PORT          = 587
 

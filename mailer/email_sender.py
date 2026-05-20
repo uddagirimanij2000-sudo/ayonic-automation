@@ -78,7 +78,7 @@ def build_email(company_name: str, category: str,
     msg["Subject"] = subject
     msg["From"]    = f"Ayonic Team <{config.GMAIL_USER}>"
     # To header is set in send_email() — do NOT set it here
-    msg["Reply-To"] = config.GMAIL_USER  # team@ayonic.com — same inbox bot monitors
+    msg["Reply-To"] = "info@ayonic.com"
     msg["Date"]    = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid(domain="ayonic.com")
 
