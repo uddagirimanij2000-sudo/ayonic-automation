@@ -69,12 +69,12 @@ def cmd_scrape(sources: list):
     print(f"\n{Fore.GREEN}✔ Done — {added} new unique leads saved{Style.RESET_ALL}\n")
 
 
-def cmd_send_emails(dry_run: bool = False):
+def cmd_send_emails(dry_run: bool = False, max_emails: int = None):
     from sheets.sheets_client import ensure_sheets_exist
     from mailer.email_sender import run_email_sender
 
     ensure_sheets_exist()
-    run_email_sender(dry_run=dry_run)
+    run_email_sender(dry_run=dry_run, max_emails=max_emails)
 
 
 def cmd_status():
@@ -213,7 +213,13 @@ if __name__ == "__main__":
 
     elif args[0] == "send-emails":
         dry = "--dry-run" in args
-        cmd_send_emails(dry_run=dry)
+        # Support --limit N flag
+        limit = None
+        if "--limit" in args:
+            idx = args.index("--limit")
+            if idx + 1 < len(args):
+                limit = int(args[idx + 1])
+        cmd_send_emails(dry_run=dry, max_emails=limit)
 
     elif args[0] in ("contact-forms", "fill-forms"):
         from outreach.contact_form_filler import run_contact_form_filler

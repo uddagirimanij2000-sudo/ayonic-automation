@@ -126,7 +126,7 @@ def preview_email(company_name: str, category: str):
     print(f"{'─'*55}{Style.RESET_ALL}")
 
 
-def run_email_sender(dry_run: bool = False):
+def run_email_sender(dry_run: bool = False, max_emails: int = None):
     """
     Main function: find eligible leads and send them outreach emails.
     Each company gets a template matched to its category.
@@ -139,6 +139,8 @@ def run_email_sender(dry_run: bool = False):
     print(f"   Sending to leads >= {config.EMAIL_DELAY_DAYS} days old...")
     if dry_run:
         print(f"   {Fore.YELLOW}[DRY RUN MODE — no emails will be sent]{Style.RESET_ALL}")
+    limit = max_emails or config.MAX_EMAILS_PER_DAY
+    print(f"   Limit: {limit} emails this run")
     print(f"{Fore.CYAN}{'─'*55}{Style.RESET_ALL}\n")
 
     leads = get_leads_ready_to_email()
@@ -152,6 +154,9 @@ def run_email_sender(dry_run: bool = False):
     failed_count = 0
 
     for lead in leads:
+        if sent_count >= limit:
+            print(f"  {Fore.YELLOW}⚠ Reached limit of {limit} emails — stopping.{Style.RESET_ALL}")
+            break
         company_name = lead.get("Company Name", "")
         to_email     = lead.get("Email", "")
         category     = lead.get("Category", "")

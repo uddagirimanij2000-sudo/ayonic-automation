@@ -136,7 +136,8 @@ SCRAPE_HOUR          = 11      # Scraper runs at 11:00
 EMAIL_CHECK_HOUR     = 13      # Email sender runs at 13:00
 
 # ── Email Limits (Gmail safe) ─────────────────────────────────────────────────
-DAILY_EMAIL_LIMIT    = 100     # Max 100 emails per send run (every 2 days)
+DAILY_EMAIL_LIMIT    = 10      # Max 10 emails per send run (every 2 days, starting May 22)
+MAX_EMAILS_PER_DAY  = DAILY_EMAIL_LIMIT  # alias used by email_sender.py
 EMAILS_PER_MINUTE    = 20      # Max 20 emails per minute
 EMAIL_DELAY_SECONDS  = 3       # 60s / 20 = 3s between each email
 
@@ -167,12 +168,8 @@ GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 
 # ── Gmail SMTP ────────────────────────────────────────────────────────────────
-GMAIL_USER         = os.getenv("GMAIL_USER", "")          # team@ayonic.com (sender)
+GMAIL_USER         = os.getenv("GMAIL_USER", "")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
-
-# info@ayonic.com — replies go here, bot monitors this inbox
-INFO_EMAIL         = os.getenv("INFO_EMAIL", "info@ayonic.com")
-INFO_APP_PASSWORD  = os.getenv("INFO_APP_PASSWORD", "")   # App password for info@ayonic.com
 SMTP_HOST          = "smtp.gmail.com"
 SMTP_PORT          = 587
 
