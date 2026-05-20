@@ -378,12 +378,25 @@ def get_leads_ready_to_email(delay_days: int = None) -> list[dict]:
     today = datetime.now().date()
     ready = []
 
+    # Non-German keywords to skip in company name
+    NON_GERMAN_KEYWORDS = [
+        'kolkata', 'mumbai', 'delhi', 'india', 'dubai', 'abu dhabi', 'uae',
+        'london', 'new york', 'nyc', 'toronto', 'sydney', 'singapore',
+        'paris', 'moscow', 'russia', 'ukraine', 'crimea', 'whirlpool india',
+        'yelp', 'versus', 'dubizzle', 'weddingsonline'
+    ]
+
     for idx, row in enumerate(all_rows, start=2):
         status         = str(row.get("Status", "")).strip().lower()
         email          = str(row.get("Email", "")).strip()
         date_found_str = str(row.get("Date Found", "")).strip()
+        company_name   = str(row.get("Company Name", "")).strip().lower()
 
         if status != "pending" or not email:
+            continue
+
+        # Skip obviously non-German/Berlin leads
+        if any(kw in company_name for kw in NON_GERMAN_KEYWORDS):
             continue
 
         try:
