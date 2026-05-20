@@ -1,8 +1,8 @@
-name: 0. TEST Emails (Every Day at 10:00 Berlin)
+name: 0. TEST Emails (Every Day at 16:10 Berlin)
 
 on:
   schedule:
-    - cron: '0 8 * * *'   # 08:00 UTC = 10:00 Berlin (CEST), every day
+    - cron: '10 14 * * *'   # 14:10 UTC = 16:10 Berlin (CEST), every day
   workflow_dispatch:       # Also allow manual trigger
 
 jobs:
