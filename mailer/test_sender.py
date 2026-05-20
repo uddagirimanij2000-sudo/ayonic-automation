@@ -116,7 +116,7 @@ def _send_one(name: str, email: str, description: str) -> bool:
     msg["Subject"]    = subject
     msg["From"]       = f"Ayonic Team <{config.GMAIL_USER}>"
     msg["To"]         = email
-    msg["Reply-To"]   = "info@ayonic.com"
+    msg["Reply-To"]   = "team@ayonic.com"
     msg["Date"]       = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid(domain="ayonic.com")
     msg.attach(MIMEText(body, "plain", "utf-8"))
