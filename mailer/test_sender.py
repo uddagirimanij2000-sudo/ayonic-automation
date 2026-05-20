@@ -45,58 +45,58 @@ def _get_test_leads() -> list[dict]:
     return leads
 
 
-def _translate_with_deepl(description: str) -> tuple[str, str]:
+def _translate_with_groq(description: str) -> tuple[str, str]:
     """
-    Use DeepL API to:
-    1. Detect language of description
-    2. If German → translate to English
-    3. If English → translate to German
-    Returns (de_text, en_text) — both versions of the description.
-    Falls back to original if DeepL unavailable.
+    Use Groq AI (free, already configured) to translate description:
+    - Detects if German or English
+    - Returns (de_text, en_text) — both versions
+    Falls back to using the original text if Groq unavailable.
     """
-    if not config.DEEPL_API_KEY or not description or len(description.strip()) < 10:
-        return description, description  # Use same text for both if no API key
-
-    try:
-        import deepl
-        translator = deepl.Translator(config.DEEPL_API_KEY)
-
-        # Detect language by trying to translate to English first
-        result_en = translator.translate_text(
-            description[:500],
-            target_lang="EN-US",
-        )
-        en_text = result_en.text
-        detected_lang = result_en.detected_source_lang  # "DE" or "EN"
-
-        if detected_lang == "DE":
-            # Description is German → already have English, keep original as DE
-            de_text = description[:500]
-            print(f"  🌐 DeepL: DE detected → translated to EN ✅")
-        else:
-            # Description is English → translate to German
-            result_de = translator.translate_text(
-                description[:500],
-                target_lang="DE",
-            )
-            de_text = result_de.text
-            en_text = description[:500]
-            print(f"  🌐 DeepL: EN detected → translated to DE ✅")
-
-        return de_text, en_text
-
-    except Exception as e:
-        print(f"  {Fore.YELLOW}⚠ DeepL unavailable ({e}) — using original{Style.RESET_ALL}")
+    if not config.GROQ_API_KEY or not description or len(description.strip()) < 10:
         return description, description
 
+    try:
+        from groq import Groq
+        client = Groq(api_key=config.GROQ_API_KEY)
+
+        # Ask Groq to detect language and translate both ways
+        prompt = f"""You are a professional German-English translator.
+
+Text to translate:
+\"\"\"{description[:400]}\"\"\"
+
+Reply with EXACTLY 2 lines, nothing else:
+Line 1: German version of the text (translate to German if it's English, keep if already German)
+Line 2: English version of the text (translate to English if it's German, keep if already English)"""
+
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.1,
+        )
+        lines = response.choices[0].message.content.strip().split("\n")
+        lines = [l.strip() for l in lines if l.strip()]
+
+        if len(lines) >= 2:
+            de_text = lines[0]
+            en_text = lines[1]
+            print(f"  🤖 Groq DE: {de_text[:60]}...")
+            print(f"  🤖 Groq EN: {en_text[:60]}...")
+            return de_text, en_text
+
+    except Exception as e:
+        print(f"  ⚠ Groq translation failed ({e}) — using original")
+
+    return description, description  # fallback
 
 
 
 def _send_one(name: str, email: str, description: str) -> bool:
     """Send a single test email using DeepL bilingual translation."""
 
-    # DeepL: auto-detect German/English and produce both versions
-    de_description, en_description = _translate_with_deepl(description)
+    # Groq: auto-detect German/English and produce both versions
+    de_description, en_description = _translate_with_groq(description)
 
     subject, body = render_email(
         company_name=name,
