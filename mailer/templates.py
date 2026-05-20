@@ -338,7 +338,8 @@ def _get_cleaning_template() -> dict:
 
 def render_email(company_name: str, category: str, sender_name: str,
                  sender_email: str, city: str = "", description: str = "",
-                 contact_name: str = "") -> tuple:
+                 contact_name: str = "",
+                 ai_detail_de: str = "", ai_detail_en: str = "") -> tuple:
     """
     Render subject and body for a company.
 
@@ -362,9 +363,9 @@ def render_email(company_name: str, category: str, sender_name: str,
     if not city:
         city = "your area"
 
-    # AI-injected detail from website
-    ai_detail_en = _extract_ai_detail(description, language="en")
-    ai_detail_de = _extract_ai_detail(description, language="de")
+    # AI-injected detail from website (use Groq translation if provided, else keyword-match)
+    ai_detail_en = ai_detail_en if ai_detail_en else _extract_ai_detail(description, language="en")
+    ai_detail_de = ai_detail_de if ai_detail_de else _extract_ai_detail(description, language="de")
 
     # Ayonic link
     ayonic_link = getattr(config, "AYONIC_LINK", "https://ayonic.com")
