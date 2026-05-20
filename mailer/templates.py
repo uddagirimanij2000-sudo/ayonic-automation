@@ -355,9 +355,9 @@ def render_email(company_name: str, category: str, sender_name: str,
     Returns:
         (subject, body) tuple — fully rendered, no placeholders left
     """
-    # Resolve contact name
+    # Resolve contact name — use company name directly, not "Team of X"
     if not contact_name:
-        contact_name = f"Team of {company_name}"
+        contact_name = company_name
 
     # Resolve city
     if not city:
