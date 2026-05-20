@@ -18,6 +18,38 @@ from colorama import Fore, Style
 
 import config
 from mailer.templates import render_email, get_template
+
+
+def _translate_with_groq(description: str) -> tuple[str, str]:
+    """
+    Use Groq AI (free) to translate description to both German and English.
+    Returns (de_text, en_text). Falls back to original if Groq unavailable.
+    """
+    if not config.GROQ_API_KEY or not description or len(description.strip()) < 10:
+        return description, description
+    try:
+        from groq import Groq
+        client = Groq(api_key=config.GROQ_API_KEY)
+        prompt = f"""You are a professional German-English translator.
+
+Text to translate:
+\"\"\"{description[:400]}\"\"\"
+
+Reply with EXACTLY 2 lines, nothing else:
+Line 1: German version (translate to German if English, keep if already German)
+Line 2: English version (translate to English if German, keep if already English)"""
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.1,
+        )
+        lines = [l.strip() for l in response.choices[0].message.content.strip().split("\n") if l.strip()]
+        if len(lines) >= 2:
+            return lines[0], lines[1]
+    except Exception:
+        pass
+    return description, description
 from sheets.sheets_client import (
     get_leads_ready_to_email,
     update_lead_status,
@@ -31,14 +63,19 @@ def build_email(company_name: str, category: str,
     """Build a personalized MIME email using the category-specific template."""
     from email.utils import formatdate, make_msgid
 
+    # Groq: translate description to both DE and EN for bilingual email
+    de_description, en_description = _translate_with_groq(description)
+
     subject, body = render_email(
         company_name=company_name,
         category=category,
         sender_name=config.SENDER_NAME,
         sender_email=config.GMAIL_USER,
         city=city,
-        description=description,
+        description=de_description,
         contact_name=contact_name,
+        ai_detail_de=de_description,
+        ai_detail_en=en_description,
     )
 
     # Anti-spam: ensure unsubscribe footer
