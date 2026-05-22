@@ -33,15 +33,31 @@ def cmd_scrape(sources: list):
     from scrapers.web_scraper import enrich_companies_with_web_data
     from scrapers.deduplicator import deduplicate_batch, filter_existing_leads
     from sheets.sheets_client import add_leads_batch, ensure_sheets_exist, get_all_leads
+    import re
 
     ensure_sheets_exist()
     companies = []
+
+    # Fetch existing leads FIRST to filter duplicates in real-time
+    print(f"\n{Fore.CYAN}▶ Loading existing leads to prevent duplicates...{Style.RESET_ALL}")
+    existing_leads = get_all_leads()
+    existing_names = set()
+    existing_phones = set()
+    existing_websites = set()
+    
+    for lead in existing_leads:
+        if lead.get("Company Name"):
+            existing_names.add(lead.get("Company Name").lower().strip())
+        if lead.get("Phone"):
+            existing_phones.add(re.sub(r"\D", "", lead.get("Phone")))
+        if lead.get("Website"):
+            existing_websites.add(lead.get("Website").lower().strip())
 
     run_all = not sources  # If no flag given, run everything
 
     if run_all or "google" in sources:
         print(f"\n{Fore.CYAN}▶ Google scraper (free search)...{Style.RESET_ALL}")
-        companies.extend(run_google_scraper())
+        companies.extend(run_google_scraper(existing_names, existing_phones, existing_websites))
 
     if run_all or "instagram" in sources:
         print(f"\n{Fore.CYAN}▶ Instagram scraper...{Style.RESET_ALL}")
@@ -57,9 +73,8 @@ def cmd_scrape(sources: list):
     # Stage 1: In-memory cross-source deduplication
     companies = deduplicate_batch(companies)
 
-    # Stage 2: Load existing leads once for dedup
-    print(f"\n{Fore.CYAN}▶ Checking for existing leads in Google Sheets...{Style.RESET_ALL}")
-    existing_leads = get_all_leads()
+    # Stage 2: Load existing leads once for dedup (still needed for Instagram/Social scrapers)
+    print(f"\n{Fore.CYAN}▶ Final duplicate check against Google Sheets...{Style.RESET_ALL}")
     companies = filter_existing_leads(companies, existing_leads)
 
     # Stage 3: Write ALL new leads in ONE batch call (no 429 write quota errors)

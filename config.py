@@ -223,5 +223,6 @@ AYONIC_LINK    = "https://ayonic.com"       # ← Your platform link
 EMAIL_LANGUAGE = "both"                    # ← "en" = English only, "de" = German only, "both" = bilingual
 
 # ── Scraper Settings ──────────────────────────────────────────────────────────
-REQUEST_DELAY_SECONDS  = 0.5  # Pause between web requests
-MAX_RESULTS_PER_QUERY  = 20   # Max companies per keyword+location combo
+REQUEST_DELAY_SECONDS    = 0.5  # Pause between web requests
+MAX_RESULTS_PER_QUERY    = 20   # Max companies to inspect per keyword+location combo
+MAX_NEW_LEADS_PER_SCRAPE = 15   # Overall target: Find up to this many NEW unique leads per run
