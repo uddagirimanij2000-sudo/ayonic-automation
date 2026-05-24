@@ -392,7 +392,4 @@ def render_email(company_name: str, category: str, sender_name: str,
 
 def get_template(category: str) -> dict:
     """Return the raw template dict for a given category."""
-    if _is_cleaning(category):
-        return _get_cleaning_template()
-    cat = category.lower().strip()
-    return TEMPLATES.get(cat, {"subject": DEFAULT_SUBJECT, "body": DEFAULT_BODY})
+    return {"subject": DEFAULT_SUBJECT, "body": DEFAULT_BODY}

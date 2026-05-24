@@ -76,17 +76,50 @@ FIELD_MAP = {
 }
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+# ── Auth & Caching ────────────────────────────────────────────────────────────
+
+_cached_client = None
+_cached_spreadsheet = None
+_cached_leads_ws = None
+_cached_email_log_ws = None
+_cached_leads_headers = None
 
 def _get_client():
-    creds = Credentials.from_service_account_file(
-        config.GOOGLE_CREDENTIALS_FILE, scopes=SCOPES
-    )
-    return gspread.authorize(creds)
+    global _cached_client
+    if _cached_client is None:
+        creds = Credentials.from_service_account_file(
+            config.GOOGLE_CREDENTIALS_FILE, scopes=SCOPES
+        )
+        _cached_client = gspread.authorize(creds)
+    return _cached_client
 
 
 def _get_spreadsheet():
-    return _get_client().open_by_key(config.GOOGLE_SHEET_ID)
+    global _cached_spreadsheet
+    if _cached_spreadsheet is None:
+        _cached_spreadsheet = _get_client().open_by_key(config.GOOGLE_SHEET_ID)
+    return _cached_spreadsheet
+
+
+def _get_leads_ws():
+    global _cached_leads_ws
+    if _cached_leads_ws is None:
+        _cached_leads_ws = _get_spreadsheet().worksheet(config.LEADS_SHEET_NAME)
+    return _cached_leads_ws
+
+
+def _get_email_log_ws():
+    global _cached_email_log_ws
+    if _cached_email_log_ws is None:
+        _cached_email_log_ws = _get_spreadsheet().worksheet(config.EMAIL_LOG_SHEET_NAME)
+    return _cached_email_log_ws
+
+
+def _get_leads_headers():
+    global _cached_leads_headers
+    if _cached_leads_headers is None:
+        _cached_leads_headers = _get_leads_ws().row_values(1)
+    return _cached_leads_headers
 
 
 # ── Sheet setup ───────────────────────────────────────────────────────────────
@@ -190,8 +223,7 @@ def clear_sheet(which: str = "leads"):
 
 def get_all_leads() -> list[dict]:
     """Return all rows from the Leads sheet as list of dicts."""
-    spreadsheet = _get_spreadsheet()
-    ws = spreadsheet.worksheet(config.LEADS_SHEET_NAME)
+    ws = _get_leads_ws()
     return ws.get_all_records()
 
 
@@ -259,9 +291,8 @@ def add_leads_batch(companies: list, existing_leads: list = None) -> int:
     if not companies:
         return 0
 
-    spreadsheet = _get_spreadsheet()
-    ws = spreadsheet.worksheet(config.LEADS_SHEET_NAME)
-    headers = ws.row_values(1)
+    ws = _get_leads_ws()
+    headers = _get_leads_headers()
 
     rows = []
     added_names = []
@@ -294,9 +325,8 @@ def add_lead(company: dict, existing_leads: list = None,
         return False
 
     if ws is None or headers is None:
-        spreadsheet = _get_spreadsheet()
-        ws = spreadsheet.worksheet(config.LEADS_SHEET_NAME)
-        headers = ws.row_values(1)
+        ws = _get_leads_ws()
+        headers = _get_leads_headers()
         row = _build_row(company, headers, existing_leads)
         if row is None:
             return False
@@ -312,11 +342,13 @@ def add_lead(company: dict, existing_leads: list = None,
 
 # ── Update ────────────────────────────────────────────────────────────────────
 
-def update_lead_status(row_index: int, status: str, email_send_date: str = ""):
+def update_lead_status(row_index: int, status: str, email_send_date: str = None, days_old: int = None):
     """Update Status, Email Send Date, and Days Since Found for a lead."""
-    spreadsheet = _get_spreadsheet()
-    ws = spreadsheet.worksheet(config.LEADS_SHEET_NAME)
-    headers = ws.row_values(1)
+    ws = _get_leads_ws()
+    headers = _get_leads_headers()
+
+    if status == "emailed" and not email_send_date:
+        email_send_date = datetime.now().strftime("%Y-%m-%d")
 
     def col(name):
         try:
@@ -324,35 +356,28 @@ def update_lead_status(row_index: int, status: str, email_send_date: str = ""):
         except ValueError:
             return None
 
-    # Calculate days since found
-    date_found_str = ""
-    date_col = col("Date Found")
-    if date_col:
-        date_found_str = ws.cell(row_index, date_col).value or ""
-
-    days_old = ""
-    try:
-        date_found = datetime.strptime(date_found_str, "%Y-%m-%d").date()
-        days_old = (datetime.now().date() - date_found).days
-    except Exception:
-        pass
-
     updates = [
         ("Status", status),
-        ("Email Send Date", email_send_date),
-        ("Days Since Found", days_old),
     ]
+    if email_send_date:
+        updates.append(("Email Send Date", email_send_date))
+    if days_old is not None:
+        updates.append(("Days Since Found", days_old))
+
+    cells_to_update = []
     for col_name, value in updates:
         c = col(col_name)
-        if c:
-            ws.update_cell(row_index, c, value)
+        if c is not None:
+            cells_to_update.append(gspread.cell.Cell(row=row_index, col=c, value=value))
+
+    if cells_to_update:
+        ws.update_cells(cells_to_update, value_input_option='USER_ENTERED')
 
 
 def update_lead_field(row_index: int, field: str, value: str):
     """Update any single field for a lead row."""
-    spreadsheet = _get_spreadsheet()
-    ws = spreadsheet.worksheet(config.LEADS_SHEET_NAME)
-    headers = ws.row_values(1)
+    ws = _get_leads_ws()
+    headers = _get_leads_headers()
     try:
         col = headers.index(field) + 1
         ws.update_cell(row_index, col, value)
@@ -434,8 +459,7 @@ def get_leads_ready_to_email(delay_days: int = None) -> list[dict]:
 def log_email_sent(company_name: str, email: str, category: str,
                    source: str = "", template: str = "default"):
     """Append a row to the Email Log sheet."""
-    spreadsheet = _get_spreadsheet()
-    ws = spreadsheet.worksheet(config.EMAIL_LOG_SHEET_NAME)
+    ws = _get_email_log_ws()
     today = datetime.now().strftime("%Y-%m-%d %H:%M")
     ws.append_row([company_name, email, category, source, today, template, "", ""])
 

@@ -1,8 +1,8 @@
-name: 4. Send Emails (Every 2 Days at 13:00 Berlin)
+name: 4. Send Emails (Every 2 Days at 16:10 Berlin)
 
 on:
   schedule:
-    - cron: '0 11 2-31/2 * *'  # 11:00 UTC = 13:00 Berlin (CEST), even days: 22,24,26,28...
+    - cron: '10 14 2-31/2 * *'  # 14:10 UTC = 16:10 Berlin (CEST), even days: 22,24,26,28...
   workflow_dispatch:
 
 jobs:

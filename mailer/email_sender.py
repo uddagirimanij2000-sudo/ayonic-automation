@@ -167,13 +167,7 @@ def run_email_sender(dry_run: bool = False, max_emails: int = None):
         row_index    = lead.get("row_index")
         days_old     = lead.get("days_old", 0)
 
-        # Identify which template will be used
-        from mailer.templates import TEMPLATES, _is_cleaning
-        if _is_cleaning(category):
-            template_used = f"ayonic_cleaning_{getattr(config, 'EMAIL_LANGUAGE', 'en')}"
-        else:
-            tmpl_key = category.strip().lower()
-            template_used = tmpl_key if tmpl_key in TEMPLATES else "default"
+        template_used = "default"
 
         print(f"  → {Fore.WHITE}{company_name}{Style.RESET_ALL} <{to_email}>")
         print(f"     Category : {category}")
