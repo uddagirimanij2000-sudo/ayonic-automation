@@ -382,23 +382,8 @@ def render_email(company_name: str, category: str, sender_name: str,
         "ayonic_link":   ayonic_link,
     }
 
-    # Choose template
-    if _is_cleaning(category):
-        template = _get_cleaning_template()
-    else:
-        # Non-cleaning: use category-specific or default
-        cat_lower = category.lower().strip()
-        template = TEMPLATES.get(cat_lower)
-
-        if not template:
-            # Fuzzy match
-            for key, tmpl in TEMPLATES.items():
-                if key in cat_lower or cat_lower in key:
-                    template = tmpl
-                    break
-
-        if not template:
-            template = {"subject": DEFAULT_SUBJECT, "body": DEFAULT_BODY}
+    # Use the same Default Ayonic template for ALL categories
+    template = {"subject": DEFAULT_SUBJECT, "body": DEFAULT_BODY}
 
     subject = template["subject"].format(**ctx)
     body    = template["body"].format(**ctx)
