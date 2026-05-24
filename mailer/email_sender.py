@@ -108,13 +108,15 @@ def send_email(to_email: str, msg: MIMEMultipart) -> bool:
         return False
 
 
-def preview_email(company_name: str, category: str):
+def preview_email(company_name: str, category: str, city: str = "", description: str = ""):
     """Print a preview of what email would be sent to a company."""
     subject, body = render_email(
         company_name=company_name,
         category=category,
         sender_name=config.SENDER_NAME,
         sender_email=config.GMAIL_USER,
+        city=city,
+        description=description,
     )
     print(f"\n{Fore.CYAN}{'─'*55}")
     print(f"  📧 EMAIL PREVIEW — {company_name} [{category}]")

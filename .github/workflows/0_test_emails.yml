@@ -1,9 +1,9 @@
 name: 0. TEST Emails (Every Day at 23:45 Berlin)
 
 on:
-  schedule:
-    - cron: '45 21 * * *'   # 21:45 UTC = 23:45 Berlin (CEST), every day
-  workflow_dispatch:       # Also allow manual trigger
+  # schedule:
+  #   - cron: '45 21 * * *'   # DISABLED — test emails stopped
+  workflow_dispatch:       # Manual trigger only (if ever needed)
 
 jobs:
   test-emails:
