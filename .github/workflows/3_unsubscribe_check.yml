@@ -1,8 +1,8 @@
 name: 3. Unsubscribe Check (12:45 Berlin, Every 2 Days)
 
 on:
-  schedule:
-    - cron: '45 10 */2 * *'  # 10:45 UTC = 12:45 Berlin (CEST), every 2 days — runs BEFORE email job
+#   schedule:
+#     - cron: '45 10 */2 * *'  # 10:45 UTC = 12:45 Berlin (CEST), every 2 days — runs BEFORE email job
   workflow_dispatch:
 
 jobs:

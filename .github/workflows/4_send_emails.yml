@@ -1,8 +1,8 @@
 name: 4. Send Emails (Every Day at 18:00 Berlin)
 
 on:
-  schedule:
-    - cron: '0 16 * * *'  # 16:00 UTC = 18:00 Berlin (CEST), every day
+#   schedule:
+#     - cron: '0 16 * * *'  # 16:00 UTC = 18:00 Berlin (CEST), every day
   workflow_dispatch:
 
 jobs:

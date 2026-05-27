@@ -1,8 +1,8 @@
 name: 5. Reply Check (14:30 Berlin)
 
 on:
-  schedule:
-    - cron: '30 12 * * *'  # 12:30 UTC = 14:30 Berlin (CEST)
+#   schedule:
+#     - cron: '30 12 * * *'  # 12:30 UTC = 14:30 Berlin (CEST)
   workflow_dispatch:
 
 jobs:
