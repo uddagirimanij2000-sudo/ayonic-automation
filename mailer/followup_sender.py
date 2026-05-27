@@ -65,12 +65,18 @@ RULES:
 5. Do NOT repeat all the benefits — just nudge
 6. End with a simple question
 7. Do NOT use emojis
-8. Sign off as:
-   Manoj Uddagiri
-   Founder, Ayonic
-   Web: {AYONIC_URL}
-   Tel: {SENDER_PHONE}
-   Email: {SENDER_EMAIL}
+8. Sign off under BOTH sections:
+   For the English section, sign off exactly as:
+   Best regards,
+   Team Ayonic
+   info@ayonic.com
+   {AYONIC_URL}
+
+   For the German section, sign off exactly as:
+   Mit freundlichen Gruessen,
+   Team Ayonic
+   info@ayonic.com
+   {AYONIC_URL}
 9. Add unsubscribe line at end
 
 Generate a subject line too (max 6 words, include "Re:" to look like a reply).
@@ -113,6 +119,11 @@ I sent you a message a few days ago about a potential partnership between {compa
 
 We help cleaning companies get more customers through our booking platform — at no upfront cost. Would you be open to a quick 5-minute chat?
 
+Best regards,
+Team Ayonic
+info@ayonic.com
+{AYONIC_URL}
+
 ---
 
 Hallo,
@@ -121,12 +132,10 @@ ich hatte Ihnen vor einigen Tagen wegen einer moeglichen Partnerschaft zwischen 
 
 Wir helfen Reinigungsunternehmen, ueber unsere Buchungsplattform mehr Kunden zu gewinnen — ohne Vorabkosten. Haetten Sie 5 Minuten fuer ein kurzes Gespraech?
 
-Viele Gruesse,
-Manoj Uddagiri
-Founder, Ayonic
-Web: {AYONIC_URL}
-Tel: {SENDER_PHONE}
-Email: {SENDER_EMAIL}
+Mit freundlichen Gruessen,
+Team Ayonic
+info@ayonic.com
+{AYONIC_URL}
 
 --
 If you do not wish to receive further emails, simply reply with "unsubscribe".
@@ -139,6 +148,11 @@ Just a final note — I'd love to connect {company_name} with new customers thro
 
 If this isn't a fit, no worries at all. Otherwise, I'm happy to chat anytime.
 
+Best regards,
+Team Ayonic
+info@ayonic.com
+{AYONIC_URL}
+
 ---
 
 Hallo,
@@ -147,12 +161,10 @@ nur eine letzte Nachricht — ich wuerde {company_name} gerne ueber Ayonic mit n
 
 Falls es nicht passt, kein Problem. Ansonsten freue ich mich ueber ein Gespraech.
 
-Viele Gruesse,
-Manoj Uddagiri
-Founder, Ayonic
-Web: {AYONIC_URL}
-Tel: {SENDER_PHONE}
-Email: {SENDER_EMAIL}
+Mit freundlichen Gruessen,
+Team Ayonic
+info@ayonic.com
+{AYONIC_URL}
 
 --
 If you do not wish to receive further emails, simply reply with "unsubscribe".
@@ -215,6 +227,10 @@ def get_followup_candidates() -> list:
 
 def run_followup_sender(dry_run: bool = False):
     """Send follow-up emails to leads that haven't replied."""
+    if not getattr(config, "ENABLE_FOLLOWUPS", True):
+        print(f"\n{Fore.YELLOW}⚠ Follow-ups are currently disabled in config.py{Style.RESET_ALL}\n")
+        return
+
     from sheets.sheets_client import update_lead_status, log_email_sent
     from mailer.personalized_sender import _get_today_count, _increment_daily_count
 

@@ -133,10 +133,11 @@ LOCATIONS = [
 SCRAPE_INTERVAL_DAYS = 3       # Run scraper every 3 days
 EMAIL_DELAY_DAYS     = 5       # Only email leads that are >= 5 days old
 SCRAPE_HOUR          = 11      # Scraper runs at 11:00
-EMAIL_CHECK_HOUR     = 13      # Email sender runs at 13:00
+EMAIL_CHECK_HOUR     = 18      # Email sender runs at 18:00
+ENABLE_FOLLOWUPS     = False   # Set to True to enable automatic follow-ups (3d/7d)
 
 # ── Email Limits (Gmail safe) ─────────────────────────────────────────────────
-DAILY_EMAIL_LIMIT    = 10      # Max 10 emails per send run (every 2 days, starting May 22)
+DAILY_EMAIL_LIMIT    = 5       # Max 5 emails per send run (every day)
 MAX_EMAILS_PER_DAY  = DAILY_EMAIL_LIMIT  # alias used by email_sender.py
 EMAILS_PER_MINUTE    = 20      # Max 20 emails per minute
 EMAIL_DELAY_SECONDS  = 3       # 60s / 20 = 3s between each email

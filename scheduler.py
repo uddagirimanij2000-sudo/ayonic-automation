@@ -166,14 +166,15 @@ def main():
 
     # Follow-up emails daily (1 hour after initial emails)
     followup_hour = config.EMAIL_CHECK_HOUR + 1
-    scheduler.add_job(
-        followup_job,
-        trigger=CronTrigger(hour=followup_hour, minute=0),
-        id="followup_job",
-        name="Send follow-up emails (3d + 7d)",
-        misfire_grace_time=3600,
-        replace_existing=True,
-    )
+    if getattr(config, "ENABLE_FOLLOWUPS", True):
+        scheduler.add_job(
+            followup_job,
+            trigger=CronTrigger(hour=followup_hour, minute=0),
+            id="followup_job",
+            name="Send follow-up emails (3d + 7d)",
+            misfire_grace_time=3600,
+            replace_existing=True,
+        )
 
     # Reply detection — runs 30 min before follow-ups
     scheduler.add_job(
@@ -214,7 +215,12 @@ def main():
     print(f"  Scrape        : every {config.SCRAPE_INTERVAL_DAYS} days at {config.SCRAPE_HOUR:02d}:00")
     print(f"  Sources       : Google + Instagram + FB + LinkedIn + TikTok + Twitter/X + YouTube")
     print(f"  Emails        : daily at {config.EMAIL_CHECK_HOUR:02d}:00 (leads >= {config.EMAIL_DELAY_DAYS} days old)")
-    print(f"  Follow-ups    : daily at {followup_hour:02d}:00 (3d + 7d auto)")
+    
+    if getattr(config, "ENABLE_FOLLOWUPS", True):
+        print(f"  Follow-ups    : daily at {followup_hour:02d}:00 (3d + 7d auto)")
+    else:
+        print(f"  Follow-ups    : {Fore.YELLOW}DISABLED{Style.RESET_ALL}")
+        
     print(f"  Reply check   : daily at {followup_hour-1:02d}:30 (auto-detect replies + ntfy)")
     print(f"  Unsubscribes  : daily at {unsub_hour-1:02d}:{unsub_minute} (block before email job)")
     print(f"  Contact forms : daily at {config.EMAIL_CHECK_HOUR:02d}:30 (no-email leads)")
