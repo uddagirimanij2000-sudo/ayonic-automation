@@ -120,14 +120,14 @@ def cmd_setup():
 
 def cmd_preview_emails():
     """Preview what emails look like for each category."""
-    from mailer.templates import TEMPLATES, render_email
+    from mailer.templates import render_email
     import config
 
     print(f"\n{Fore.CYAN}{'='*55}")
     print(f"  📧 EMAIL TEMPLATE PREVIEWS")
     print(f"{'='*55}{Style.RESET_ALL}\n")
 
-    all_categories = list(TEMPLATES.keys()) + ["unknown category"]
+    all_categories = ["plumber", "electrician", "painter", "cleaner", "unknown category"]
     company_names = {
         "plumber": "ABC Plumbing",
         "cleaner": "Lisboa Clean",
