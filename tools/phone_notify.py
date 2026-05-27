@@ -109,7 +109,7 @@ def notify_daily_report():
 
         total       = len(leads)
         pending     = sum(1 for l in leads if str(l.get("Status","")).lower() == "pending")
-        emailed     = sum(1 for l in leads if str(l.get("Status","")).lower() == "emailed")
+        emailed     = sum(1 for l in leads if str(l.get("Status","")).lower() in ["emailed", "follow-up-1", "follow-up-2", "no-reply", "replied", "unsubscribed"])
         replied     = sum(1 for l in leads if str(l.get("Status","")).lower() == "replied")
         unsubs      = sum(1 for l in leads if str(l.get("Status","")).lower() == "unsubscribed")
         no_email    = sum(1 for l in leads if not str(l.get("Email","")).strip())

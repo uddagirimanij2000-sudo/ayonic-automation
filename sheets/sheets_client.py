@@ -484,7 +484,7 @@ def get_stats() -> dict:
         s = str(lead.get("Status", "")).strip().lower()
         if s == "pending":
             stats["pending"] += 1
-        elif s == "emailed":
+        elif s in ["emailed", "follow-up-1", "follow-up-2", "no-reply", "replied", "unsubscribed"]:
             stats["emailed"] += 1
         elif s == "no email":
             stats["no_email"] += 1
